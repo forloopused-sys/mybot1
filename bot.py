@@ -1,3 +1,4 @@
+import os
 import requests
 import platform
 import socket
@@ -5,7 +6,7 @@ import psutil
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
 
-TOKEN = "8535356385:AAG4sieAh2JqbnSy93qqMbZUL_UtgTudqUY"
+TOKEN = os.getenv("BOT_TOKEN")
 
 def get_public_ip():
     try:
@@ -15,8 +16,7 @@ def get_public_ip():
 
 def get_local_ip():
     try:
-        hostname = socket.gethostname()
-        return socket.gethostbyname(hostname)
+        return socket.gethostbyname(socket.gethostname())
     except:
         return "Unable to fetch local IP."
 
@@ -28,20 +28,20 @@ def get_device_info():
         "Version": platform.version(),
         "Machine": platform.machine(),
         "Processor": platform.processor(),
-        "CPU Cores": psutil.cpu_count(logical=True),
-        "Total RAM (GB)": round(psutil.virtual_memory().total / (1024**3), 2)
+        "CPU Cores": psutil.cpu_count(),
+        "Total RAM (GB)": round(psutil.virtual_memory().total / (1024**3), 2),
     }
     return info
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text("👋 Hello! Send /info to get device details.")
+    await update.message.reply_text("Bot is online! Send /info to get server details.")
 
 async def info(update: Update, context: ContextTypes.DEFAULT_TYPE):
     public_ip = get_public_ip()
     local_ip = get_local_ip()
     device = get_device_info()
 
-    message = "📡 Device & Network Information\n\n"
+    message = "📡 Device & Network Info\n"
     message += f"🌐 Public IP: {public_ip}\n"
     message += f"🏠 Local IP: {local_ip}\n\n"
     message += "💻 Device Details:\n"
@@ -56,8 +56,8 @@ def main():
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("info", info))
 
-    print("Bot is running…")
-    app.run_polling()  # <-- No await, works on Windows
+    print("Bot is running on Render...")
+    app.run_polling()  # <-- correct for PTB 20+
 
 if __name__ == "__main__":
     main()
